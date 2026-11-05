@@ -1,161 +1,224 @@
 import { useEffect, useState } from "react";
 import SearchBar from "./components/SearchBar";
-import UsuarioForm from "./components/UsuarioForm";
-import UserList from "./components/UserList";
+import ProdutoForm from "./components/ProdutoForm";
+import ProdutoList from "./components/ProdutoList";
 
-// Endereço da API. O proxy do Vite (vite.config.js) encaminha "/usuarios" ao Spring Boot.
-// Para chamar direto, troque por "http://localhost:8080/usuarios" e use @CrossOrigin no controller.
-const API_URL = "/usuarios";
+// Endereço da API.
+const API_URL = "/produtos";
 
-const FORM_VAZIO = { nome: "", email: "" };
+const FORM_VAZIO = {
+  nome: "",
+  categoria: "",
+  valor: "",
+  quantidade: ""
+};
 
-// Todas as chamadas fetch da aplicação ficam neste arquivo:
-//   carregarUsuarios() → GET
-//   cadastrar()        → POST
-//   atualizar()        → PUT
-//   excluir()          → DELETE
-// Os componentes em /components apenas exibem dados e avisam o App quando algo acontece.
 function App() {
-  // --- Dados da API ---
-  const [usuarios, setUsuarios] = useState([]);
+  // Dados da API
+  const [produtos, setProdutos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState("");
 
-  // --- Formulário ---
+  // Formulário
   const [form, setForm] = useState(FORM_VAZIO);
-  const [editandoId, setEditandoId] = useState(null); // null = cadastrando | número = editando
+  const [editandoId, setEditandoId] = useState(null);
   const [salvando, setSalvando] = useState(false);
 
-  // --- Busca e avisos ---
+  // Busca e avisos
   const [busca, setBusca] = useState("");
-  const [aviso, setAviso] = useState(null); // { tipo: "sucesso" | "erro", texto: "..." }
+  const [aviso, setAviso] = useState(null);
 
   // ---------------------------------------------------------------
-  // GET /usuarios → lista todos os usuários
+  // GET /produtos -> lista todos os produtos
   // ---------------------------------------------------------------
-  function carregarUsuarios() {
+
+  function carregarProdutos() {
     setLoading(true);
     setErro("");
 
     fetch(API_URL)
       .then((res) => {
-        // fetch só dá erro em falha de rede; status 4xx/5xx precisamos checar manualmente
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
       .then((dados) => {
-        setUsuarios(dados);
+        setProdutos(dados);
         setLoading(false);
       })
       .catch(() => {
-        setErro("Não foi possível carregar os usuários. Confira se a API está rodando na porta 8080.");
+        setErro(
+          "Não foi possível carregar os produtos. Confira se a API está rodando."
+        );
         setLoading(false);
       });
   }
 
-  // Array de dependência vazio: executa uma única vez, quando a aplicação abre.
+  // Executa uma vez quando a aplicação abre.
   useEffect(() => {
-    carregarUsuarios();
+    carregarProdutos();
   }, []);
 
-  // Executa sempre que a lista muda e mostra o total na aba do navegador.
+  // Atualiza o título da aba quando a lista muda.
   useEffect(() => {
-    document.title = `Usuários (${usuarios.length})`;
-  }, [usuarios]);
+    document.title = `Produtos (${produtos.length})`;
+  }, [produtos]);
 
   // ---------------------------------------------------------------
-  // POST /usuarios → cadastra um novo usuário
+  // POST /produtos -> cadastra um novo produto
   // ---------------------------------------------------------------
+
   function cadastrar() {
     setSalvando(true);
 
+    const dadosProduto = {
+      nome: form.nome,
+      categoria: form.categoria,
+      valor: Number(form.valor),
+      quantidade: Number(form.quantidade)
+    };
+
     fetch(API_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form), // sem id: o banco gera (auto incremento)
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(dadosProduto)
     })
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json(); // a API devolve o usuário salvo, já com id
+        return res.json();
       })
       .then((criado) => {
-        setUsuarios((anterior) => [...anterior, criado]);
+        setProdutos((anterior) => [...anterior, criado]);
         limparFormulario();
-        setAviso({ tipo: "sucesso", texto: `${criado.nome} foi cadastrado.` });
+
+        setAviso({
+          tipo: "sucesso",
+          texto: `${criado.nome} foi cadastrado.`
+        });
+
         setSalvando(false);
       })
       .catch(() => {
-        setAviso({ tipo: "erro", texto: "Não foi possível cadastrar. Tente novamente." });
+        setAviso({
+          tipo: "erro",
+          texto: "Não foi possível cadastrar o produto. Tente novamente."
+        });
+
         setSalvando(false);
       });
   }
 
   // ---------------------------------------------------------------
-  // PUT /usuarios/{id} → atualiza um usuário existente
+  // PUT /produtos/{id} -> atualiza um produto
   // ---------------------------------------------------------------
+
   function atualizar() {
     setSalvando(true);
 
+    const dadosProduto = {
+      nome: form.nome,
+      categoria: form.categoria,
+      valor: Number(form.valor),
+      quantidade: Number(form.quantidade)
+    };
+
     fetch(`${API_URL}/${editandoId}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(dadosProduto)
     })
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
       .then((atualizado) => {
-        // troca na lista apenas o usuário alterado
-        setUsuarios((anterior) =>
-          anterior.map((u) => (u.id === atualizado.id ? atualizado : u))
+        setProdutos((anterior) =>
+          anterior.map((p) =>
+            p.id === atualizado.id ? atualizado : p
+          )
         );
+
         limparFormulario();
-        setAviso({ tipo: "sucesso", texto: `${atualizado.nome} foi atualizado.` });
+
+        setAviso({
+          tipo: "sucesso",
+          texto: `${atualizado.nome} foi atualizado.`
+        });
+
         setSalvando(false);
       })
       .catch(() => {
-        setAviso({ tipo: "erro", texto: "Não foi possível atualizar. O usuário ainda existe?" });
+        setAviso({
+          tipo: "erro",
+          texto: "Não foi possível atualizar o produto."
+        });
+
         setSalvando(false);
       });
   }
 
   // ---------------------------------------------------------------
-  // DELETE /usuarios/{id} → exclui um usuário
+  // DELETE /produtos/{id} -> exclui um produto
   // ---------------------------------------------------------------
-  function excluir(usuario) {
-    if (!window.confirm(`Excluir ${usuario.nome}?`)) return;
 
-    fetch(`${API_URL}/${usuario.id}`, { method: "DELETE" })
+  function excluir(produto) {
+    if (!window.confirm(`Excluir ${produto.nome}?`)) return;
+
+    fetch(`${API_URL}/${produto.id}`, {
+      method: "DELETE"
+    })
       .then((res) => {
-        // A API responde sem corpo, então não chamamos res.json() aqui.
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        setUsuarios((anterior) => anterior.filter((u) => u.id !== usuario.id));
-        if (editandoId === usuario.id) limparFormulario();
-        setAviso({ tipo: "sucesso", texto: `${usuario.nome} foi excluído.` });
+
+        setProdutos((anterior) =>
+          anterior.filter((p) => p.id !== produto.id)
+        );
+
+        if (editandoId === produto.id) {
+          limparFormulario();
+        }
+
+        setAviso({
+          tipo: "sucesso",
+          texto: `${produto.nome} foi excluído.`
+        });
       })
       .catch(() => {
-        setAviso({ tipo: "erro", texto: "Não foi possível excluir. Tente novamente." });
+        setAviso({
+          tipo: "erro",
+          texto: "Não foi possível excluir o produto."
+        });
       });
   }
 
   // ---------------------------------------------------------------
-  // Funções de apoio (sem fetch)
+  // Funções de apoio
   // ---------------------------------------------------------------
+
   function limparFormulario() {
     setForm(FORM_VAZIO);
     setEditandoId(null);
   }
 
-  function iniciarEdicao(usuario) {
-    setForm({ nome: usuario.nome, email: usuario.email });
-    setEditandoId(usuario.id);
+  function iniciarEdicao(produto) {
+    setForm({
+      nome: produto.nome,
+      categoria: produto.categoria,
+      valor: String(produto.valor),
+      quantidade: String(produto.quantidade)
+    });
+
+    setEditandoId(produto.id);
     setAviso(null);
   }
 
   function enviarFormulario(evento) {
     evento.preventDefault();
     setAviso(null);
+
     if (editandoId === null) {
       cadastrar();
     } else {
@@ -163,28 +226,33 @@ function App() {
     }
   }
 
-  // Filtro da busca (mesma ideia do Exemplo 4 da aula)
-  const filtrados = usuarios.filter(
-    (u) =>
-      (u.nome ?? "").toLowerCase().includes(busca.toLowerCase()) ||
-      (u.email ?? "").toLowerCase().includes(busca.toLowerCase())
+  // Busca por nome ou categoria.
+  const filtrados = produtos.filter(
+    (p) =>
+      (p.nome ?? "").toLowerCase().includes(busca.toLowerCase()) ||
+      (p.categoria ?? "").toLowerCase().includes(busca.toLowerCase())
   );
 
   // ---------------------------------------------------------------
-  // Tela
+  // Interface
   // ---------------------------------------------------------------
+
   return (
     <main className="pagina">
       <header className="cabecalho">
-        <h1>Cadastro de usuários</h1>
-        <p>Cadastre, edite e exclua usuários da API Spring Boot.</p>
+        <h1>Cadastro de produtos</h1>
+        <p>Cadastre, edite e exclua produtos da API Spring Boot.</p>
       </header>
 
       <div className="layout">
         <section className="painel">
-          <h2>{editandoId === null ? "Novo usuário" : `Editando usuário ${editandoId}`}</h2>
+          <h2>
+            {editandoId === null
+              ? "Novo produto"
+              : `Editando produto ${editandoId}`}
+          </h2>
 
-          <UsuarioForm
+          <ProdutoForm
             form={form}
             setForm={setForm}
             editando={editandoId !== null}
@@ -202,16 +270,23 @@ function App() {
 
         <section className="painel">
           <div className="painel-topo">
-            <h2>Usuários ({usuarios.length})</h2>
-            <button type="button" className="secundario" onClick={carregarUsuarios} disabled={loading}>
-              Recarregar usuários
+            <h2>Produtos ({produtos.length})</h2>
+
+            <button
+              type="button"
+              className="secundario"
+              onClick={carregarProdutos}
+              disabled={loading}
+            >
+              Recarregar produtos
             </button>
           </div>
 
           <SearchBar busca={busca} setBusca={setBusca} />
 
-          {/* Padrão da aula: Loading → Erro → Dados */}
-          {loading && <p className="mensagem">Carregando...</p>}
+          {loading && (
+            <p className="mensagem">Carregando...</p>
+          )}
 
           {!loading && erro && (
             <p className="mensagem mensagem-erro" role="alert">
@@ -220,9 +295,9 @@ function App() {
           )}
 
           {!loading && !erro && (
-            <UserList
-              usuarios={filtrados}
-              totalGeral={usuarios.length}
+            <ProdutoList
+              produtos={filtrados}
+              totalGeral={produtos.length}
               editandoId={editandoId}
               onEditar={iniciarEdicao}
               onExcluir={excluir}

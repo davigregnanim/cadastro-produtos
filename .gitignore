@@ -1,13 +1,83 @@
-# React
+# =====================================
+# FRONTEND - REACT / NODE.JS
+# =====================================
+
 frontend/node_modules/
 frontend/dist/
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
 
-# Java
+
+# =====================================
+# BACKEND - JAVA / MAVEN / SPRING BOOT
+# =====================================
+
+HELP.md
 backend/target/
+backend/.mvn/wrapper/maven-wrapper.jar
 
-# IDE
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+backend/build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+
+# =====================================
+# ECLIPSE / SPRING TOOL SUITE (STS)
+# =====================================
+
+.apt_generated/
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache/
+
+
+# =====================================
+# INTELLIJ IDEA
+# =====================================
+
 .idea/
+*.iws
+*.iml
+*.ipr
+
+
+# =====================================
+# NETBEANS
+# =====================================
+
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+
+# =====================================
+# VISUAL STUDIO CODE
+# =====================================
+
 .vscode/
 
-# Ambiente
+
+# =====================================
+# VARIAVEIS DE AMBIENTE
+# =====================================
+
 .env
+.env.*
+!.env.example
+
+
+# =====================================
+# SISTEMA OPERACIONAL
+# =====================================
+
+.DS_Store
+Thumbs.db

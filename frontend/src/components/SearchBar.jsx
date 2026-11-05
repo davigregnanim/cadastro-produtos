@@ -1,8 +1,9 @@
-// Campo de busca controlado pelo estado do App.
+
 function SearchBar({ busca, setBusca }) {
   return (
     <label className="campo">
-      Buscar por nome ou e-mail
+      Buscar por nome ou categoria
+
       <input
         type="search"
         placeholder="Digite para filtrar..."
