@@ -1,0 +1,13 @@
+# React
+frontend/node_modules/
+frontend/dist/
+
+# Java
+backend/target/
+
+# IDE
+.idea/
+.vscode/
+
+# Ambiente
+.env
